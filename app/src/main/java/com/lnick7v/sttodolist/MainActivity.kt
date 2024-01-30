@@ -34,11 +34,19 @@ class MainActivity : AppCompatActivity() {
         buttonAddNote = findViewById(R.id.buttonAddNote)
     }
 
+    /*** fun for updating notes on main activity ***/
     private fun showNotes() {
         linearLayoutNotes.removeAllViews()
 
+        //takes all notes from database, converts each from xml-layout to View objects
+        // and places all views(notes) on ScrollView Linear Layout
         database.getNotes().forEach { note ->
             val view = layoutInflater.inflate(R.layout.note_item, linearLayoutNotes, false)
+            view.setOnClickListener{
+                database.remove(note.id)
+                showNotes()
+            }
+
             //val texViewNote = view.findViewById<TextView>(R.id.textViewNote)
             //val texViewNote = (view as TextView)
             (view as TextView).text = note.text
