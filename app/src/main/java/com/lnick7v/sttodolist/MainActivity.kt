@@ -5,17 +5,22 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 class MainActivity : AppCompatActivity() {
-    private lateinit var linearLayoutNotes: LinearLayout
     private lateinit var buttonAddNote: FloatingActionButton
     private val database = Database
+    private lateinit var recyclerViewNotes: RecyclerView   //строка для последующего доступа к RV
+    private val notesAdapter = NotesAdapter(database.getNotes())  //создания адаптера
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         initViews()
+        recyclerViewNotes.adapter = notesAdapter // устанавливаем адаптер для RW
+        recyclerViewNotes.layoutManager = LinearLayoutManager(this, LinearLayout.VERTICAL, null )
 
         buttonAddNote.setOnClickListener {
             startActivity(AddNoteActivity.newIntent(this))
@@ -30,7 +35,7 @@ class MainActivity : AppCompatActivity() {
 
 
     private fun initViews() {
-        linearLayoutNotes = findViewById(R.id.linearLayoutNotes)
+        recyclerViewNotes = findViewById(R.id.recyclerViewNotes)
         buttonAddNote = findViewById(R.id.buttonAddNote)
     }
 
@@ -42,6 +47,7 @@ class MainActivity : AppCompatActivity() {
         // and places all views(notes) on ScrollView Linear Layout
         database.getNotes().forEach { note ->
             val view = layoutInflater.inflate(R.layout.note_item, linearLayoutNotes, false)
+
             view.setOnClickListener{
                 database.remove(note.id)
                 showNotes()
