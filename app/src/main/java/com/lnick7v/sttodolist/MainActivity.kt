@@ -1,14 +1,11 @@
 package com.lnick7v.sttodolist
 
-import android.graphics.drawable.ColorDrawable
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.view.View
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import com.google.android.material.floatingactionbutton.FloatingActionButton
-import kotlin.random.Random
 
 class MainActivity : AppCompatActivity() {
     private lateinit var linearLayoutNotes: LinearLayout
