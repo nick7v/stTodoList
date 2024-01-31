@@ -11,6 +11,8 @@ class NotesAdapter(private var notes: ArrayList<Note>): RecyclerView.Adapter<Not
 
     fun setNotes(notes: ArrayList<Note>) {
         this.notes = notes
+        //notifyDataSetChanged() // сообщаем адаптеру что данные изменились, чтобы он обновился.
+        // Но у меня все работает и без выхова данного метода, из-за того что я при вызове адаптера передаю ему Database
     }
 
 
