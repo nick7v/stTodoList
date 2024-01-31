@@ -9,10 +9,21 @@ import androidx.recyclerview.widget.RecyclerView
 
 class NotesAdapter(private var notes: ArrayList<Note>): RecyclerView.Adapter<NotesAdapter.NotesViewHolder>() {
 
+
+    // переменная для хранения ClickListener получаемого из вне
+    private var onNoteClickListener: OnNoteClickListener? = null
+
+    //setter для ClickListener
+    fun setOnNoteClickListener(onNoteClickListener: OnNoteClickListener) {
+        this.onNoteClickListener = onNoteClickListener
+    }
+
+
+    //setter для массива notes
     fun setNotes(notes: ArrayList<Note>) {
         this.notes = notes
-        //notifyDataSetChanged() // сообщаем адаптеру что данные изменились, чтобы он обновился.
-        // Но у меня все работает и без выхова данного метода, из-за того что я при вызове адаптера передаю ему Database
+        notifyDataSetChanged() // сообщаем адаптеру что данные изменились, чтобы он обновился.
+        // при добавлении элементов все работает и без вызова этого метода, а при удалении, только с ним
     }
 
 
@@ -45,6 +56,13 @@ class NotesAdapter(private var notes: ArrayList<Note>): RecyclerView.Adapter<Not
             else -> android.R.color.holo_red_light
         }
         holder.textViewNote.background = ContextCompat.getDrawable(holder.itemView.context, colorResId)
+
+        //устанаваливаем ClickListener для корневого view ViewHolder-а - itemView, т.е. для конкретного элемента списка
+        //реализация же слушателя берется из MainActivity. Проверка на null нужна на случай если в mainActivity
+        //мы не назначим setOnClickListener, в таком случае в адаптере он будет = null
+        holder.itemView.setOnClickListener {
+            if (onNoteClickListener != null) onNoteClickListener!!.onNoteClick(note)
+        }
     }
 
 
@@ -62,6 +80,14 @@ class NotesAdapter(private var notes: ArrayList<Note>): RecyclerView.Adapter<Not
     // только 1 View. Будет создано примерно 10-12 объектов класса (по кол-ву элементов отображаемых на экране)
     class NotesViewHolder(view: View): RecyclerView.ViewHolder(view) {
         var textViewNote: TextView = view.findViewById<TextView>(R.id.textViewNote)
+    }
+
+
+    //реализуем свой интерфейс OnClickListener, в методе которого в параметры передаем note, а не view как в стандартном интерфейсе
+    interface OnNoteClickListener {
+        fun onNoteClick(note: Note) {
+
+        }
     }
 
 }

@@ -15,6 +15,16 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         initViews()
+
+        //устанавливаем ClickListener на адаптер, который в свою очередь у себя в коде устанаваливает слушатель на элементы списка
+        notesAdapter.setOnNoteClickListener(object: NotesAdapter.OnNoteClickListener {
+            override fun onNoteClick(note: Note) {
+                database.remove(note.id)
+                showNotes()
+            }
+        })
+
+
         recyclerViewNotes.adapter = notesAdapter // устанавливаем адаптер для RW
         //recyclerViewNotes.layoutManager = LinearLayoutManager(this) // устанавливаем LO manager для указания формата отображения RW - здесь в проекте это прописал в xml
 
