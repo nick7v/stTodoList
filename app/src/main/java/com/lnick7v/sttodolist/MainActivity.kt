@@ -17,6 +17,7 @@ class MainActivity : AppCompatActivity() {
         initViews()
 
         //устанавливаем ClickListener на адаптер, который в свою очередь у себя в коде устанаваливает слушатель на элементы списка
+        //сеттер вызывается 1 раз, а метод внутри него onNoteClick каждый раз при нажатии на элемент списка
         notesAdapter.setOnNoteClickListener(object: NotesAdapter.OnNoteClickListener {
             override fun onNoteClick(note: Note) {
                 database.remove(note.id)
