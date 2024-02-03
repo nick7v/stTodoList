@@ -7,8 +7,8 @@ import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 
-class NotesAdapter(private var notes: ArrayList<Note>): RecyclerView.Adapter<NotesAdapter.NotesViewHolder>() {
-
+class NotesAdapter(): RecyclerView.Adapter<NotesAdapter.NotesViewHolder>() {
+    private lateinit var notes: ArrayList<Note>
 
     // переменная для хранения ClickListener получаемого из вне
     private var onNoteClickListener: OnNoteClickListener? = null
@@ -18,6 +18,10 @@ class NotesAdapter(private var notes: ArrayList<Note>): RecyclerView.Adapter<Not
         this.onNoteClickListener = onNoteClickListener
     }
 
+    //getter для массива notes - возвращаем копию массива, а не оригинал, чтобы нельзя было повлиять на него из вне
+    fun getNotes(): ArrayList<Note> {
+        return ArrayList(notes)
+    }
 
     //setter для массива notes
     fun setNotes(notes: ArrayList<Note>) {
