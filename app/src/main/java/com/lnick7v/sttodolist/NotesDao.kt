@@ -1,5 +1,6 @@
 package com.lnick7v.sttodolist
 
+import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
@@ -11,7 +12,9 @@ import androidx.room.Query
 @Dao
 interface NotesDao {
     @Query("SELECT * FROM notes") //аннотация к методу getNotes() - запрос в БД ("выбрать все из таблицы notes")
-    fun getNotes(): List<Note>
+    fun getNotes(): LiveData<List<Note>> //Помещаем объект List<Note> в LiveData, чтобы можно было
+    // где либо в приложении подписаться на изменения объекта. Room под капотом реализует отправку измененных данных.
+    //при помещении объекта в LiveDate запрос в БД будет АВТОМАТИЧЕСКИ ПРОИСХОДИТЬ В ФОНОВОМ ПОТОКЕ
 
 
     // аннотация к методу add() - вставка объекта в таблицу, запрос писать не нужно, room это реализует сам
