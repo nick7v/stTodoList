@@ -15,13 +15,13 @@ class AddNoteActivity : AppCompatActivity() {
     private lateinit var radioButtonMedium: RadioButton
     private lateinit var radioButtonHigh: RadioButton
     private lateinit var buttonSave: Button
-
-    private val database = Database
+    private lateinit var noteDatabase: NoteDatabase // переменная БД
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_add_note)
+        noteDatabase = NoteDatabase.getInstance(application)  //присваиваем переменной объект БД
         initViews()
 
         buttonSave.setOnClickListener {
@@ -39,9 +39,9 @@ class AddNoteActivity : AppCompatActivity() {
         } else {
             val text = editTextNote.text.toString().trim()
             val priority = getPriority()
-            val id = database.getNotes().size
-            val note = Note(id, text, priority)
-            database.add(note)
+            //id не передаем т.к. autogenerate класса Note сгенерирует id самостоятельно (если получит 0)
+            val note = Note(text, priority)
+            noteDatabase.notesDao().add(note)
             finish()
         }
     }
