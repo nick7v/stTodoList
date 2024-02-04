@@ -8,7 +8,7 @@ import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 
 class NotesAdapter(): RecyclerView.Adapter<NotesAdapter.NotesViewHolder>() {
-    private lateinit var notes: ArrayList<Note>
+    private var notes = listOf<Note>()
 
     // переменная для хранения ClickListener получаемого из вне
     private var onNoteClickListener: OnNoteClickListener? = null
@@ -19,12 +19,12 @@ class NotesAdapter(): RecyclerView.Adapter<NotesAdapter.NotesViewHolder>() {
     }
 
     //getter для массива notes - возвращаем копию массива, а не оригинал, чтобы нельзя было повлиять на него из вне
-    fun getNotes(): ArrayList<Note> {
+    fun getNotes(): List<Note> {
         return ArrayList(notes)
     }
 
     //setter для массива notes
-    fun setNotes(notes: ArrayList<Note>) {
+    fun setNotes(notes: List<Note>) {
         this.notes = notes
         notifyDataSetChanged() // сообщаем адаптеру что данные изменились, чтобы он обновился.
         // при добавлении элементов все работает и без вызова этого метода, а при удалении, только с ним

@@ -8,14 +8,17 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 class MainActivity : AppCompatActivity() {
     private lateinit var buttonAddNote: FloatingActionButton
-    private val database = Database
+    private lateinit var noteDatabase: NoteDatabase   // переменная для доступа к БД
     private lateinit var recyclerViewNotes: RecyclerView   //строка для последующего доступа к RV
-    private val notesAdapter = NotesAdapter()  //создание объекта адаптера, при первом создании мы ему передаем массив Database
+    private lateinit var notesAdapter: NotesAdapter //переменная для доступа к адаптеру
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        noteDatabase = NoteDatabase.getInstance(application) // получение экземпляра БД
         initViews()
+        notesAdapter = NotesAdapter() //присваивание переменной объект адаптера
 
         //устанавливаем ClickListener на адаптер (точнее передаем адаптеру слушатель), который в свою очередь у себя в коде
         // устанаваливает слушатель на элементы списка. Сеттер вызывается 1 раз, а метод внутри него onNoteClick каждый раз при нажатии на элемент списка
@@ -47,7 +50,7 @@ class MainActivity : AppCompatActivity() {
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                 val position = viewHolder.adapterPosition // получаем N позиции элемента RV из ViewHoldera
                 val note = notesAdapter.getNotes().get(position) // получаем массив заметок из адаптера и по позиции получаем элемент с нужным индексом
-                database.remove(note.id)
+                noteDatabase.notesDao().remove(note.id) // удаляем строку из БД c указанным id
                 showNotes()
             }
         })
@@ -73,6 +76,6 @@ class MainActivity : AppCompatActivity() {
 
     /* fun for updating notes on main activity */
     private fun showNotes() {
-        notesAdapter.setNotes(database.getNotes()) // обновляем базу данных адаптера
+        notesAdapter.setNotes(noteDatabase.notesDao().getNotes()) // обновляем базу данных адаптера
     }
 }
