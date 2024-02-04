@@ -21,7 +21,7 @@ abstract class NoteDatabase: RoomDatabase() {
                 //создание объекта БД через Room.databaseBuilder. В параметры передаем: 1. контекст приложения,
                 //2. наш класс БД, 3. имя БД
                 instance = Room.databaseBuilder(application, NoteDatabase::class.java, DB_NAME)
-                    .allowMainThreadQueries().build()
+                    .build()
             }
             return instance!!
         }

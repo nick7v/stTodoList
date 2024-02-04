@@ -1,6 +1,8 @@
 package com.lnick7v.sttodolist
 
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
@@ -11,6 +13,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var noteDatabase: NoteDatabase   // переменная для доступа к БД
     private lateinit var recyclerViewNotes: RecyclerView   //строка для последующего доступа к RV
     private lateinit var notesAdapter: NotesAdapter //переменная для доступа к адаптеру
+    private val handler = Handler(Looper.getMainLooper()) // инициализируем объект Handler, который хранит ссылку на главный поток (ее мы передали в параметры)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -50,8 +53,11 @@ class MainActivity : AppCompatActivity() {
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                 val position = viewHolder.adapterPosition // получаем N позиции элемента RV из ViewHoldera
                 val note = notesAdapter.getNotes().get(position) // получаем массив заметок из адаптера и по позиции получаем элемент с нужным индексом
-                noteDatabase.notesDao().remove(note.id) // удаляем строку из БД c указанным id
-                showNotes()
+                Thread { // в новом фоновом потоке
+                    noteDatabase.notesDao().remove(note.id) // сначала удаляем строку из БД c указанным id
+                    handler.post { showNotes() } // после отправляем handler-у главного потока сообщение чтобы он
+                    // в своем потоке (главном) вызвал метод showNotes(), т.е. обновил БД в адаптере RV (т.е. обновляем список заметок)
+                }.start()  // запускаем фоновый поток
             }
         })
         itemTouchHelper.attachToRecyclerView(recyclerViewNotes) // прикрепляем itemTouch к RV
@@ -68,14 +74,17 @@ class MainActivity : AppCompatActivity() {
     }
 
 
-
     private fun initViews() {
         recyclerViewNotes = findViewById(R.id.recyclerViewNotes)
         buttonAddNote = findViewById(R.id.buttonAddNote)
     }
 
-    /* fun for updating notes on main activity */
+
     private fun showNotes() {
-        notesAdapter.setNotes(noteDatabase.notesDao().getNotes()) // обновляем базу данных адаптера
+        Thread { // в новом фоновом потоке
+            val notes: List<Note> = noteDatabase.notesDao().getNotes() // сначала получаем БД
+            handler.post { notesAdapter.setNotes(notes)  } // после отправляем handler-у главного потока сообщение чтобы он
+            // в своем потоке (главном) установил (обновил) БД в адаптер RV (т.е. обновляем список заметок)
+        }.start()
     }
 }

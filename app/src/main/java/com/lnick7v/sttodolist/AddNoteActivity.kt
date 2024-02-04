@@ -4,6 +4,8 @@ import android.content.Context
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.widget.Button
 import android.widget.EditText
 import android.widget.RadioButton
@@ -16,6 +18,7 @@ class AddNoteActivity : AppCompatActivity() {
     private lateinit var radioButtonHigh: RadioButton
     private lateinit var buttonSave: Button
     private lateinit var noteDatabase: NoteDatabase // переменная БД
+    private val handler = Handler(Looper.getMainLooper())
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -41,8 +44,11 @@ class AddNoteActivity : AppCompatActivity() {
             val priority = getPriority()
             //id не передаем т.к. autogenerate класса Note сгенерирует id самостоятельно (если получит 0)
             val note = Note(text, priority)
-            noteDatabase.notesDao().add(note)
-            finish()
+            Thread { // в новом фоновом потоке
+                noteDatabase.notesDao().add(note) // добавляем заметку в БД
+                handler.post { finish() }  // через handler главного потока закрываем активити
+            }.start()
+
         }
     }
 
