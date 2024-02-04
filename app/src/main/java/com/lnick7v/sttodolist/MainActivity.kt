@@ -1,21 +1,58 @@
 package com.lnick7v.sttodolist
 
 import android.os.Bundle
-import android.widget.LinearLayout
-import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat
+import androidx.recyclerview.widget.ItemTouchHelper
+import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 class MainActivity : AppCompatActivity() {
-    private lateinit var linearLayoutNotes: LinearLayout
     private lateinit var buttonAddNote: FloatingActionButton
     private val database = Database
+    private lateinit var recyclerViewNotes: RecyclerView   //строка для последующего доступа к RV
+    private val notesAdapter = NotesAdapter()  //создание объекта адаптера, при первом создании мы ему передаем массив Database
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         initViews()
+
+        //устанавливаем ClickListener на адаптер (точнее передаем адаптеру слушатель), который в свою очередь у себя в коде
+        // устанаваливает слушатель на элементы списка. Сеттер вызывается 1 раз, а метод внутри него onNoteClick каждый раз при нажатии на элемент списка
+        notesAdapter.setOnNoteClickListener(object : NotesAdapter.OnNoteClickListener {
+            override fun onNoteClick(note: Note) { //удаление нажатием пока отключил
+                /*database.remove(note.id)
+                showNotes()*/
+            }
+        })
+
+        recyclerViewNotes.adapter = notesAdapter // устанавливаем адаптер для RV
+        //recyclerViewNotes.layoutManager = LinearLayoutManager(this) // устанавливаем LO manager для указания формата отображения RW - здесь в проекте это прописал в xml
+
+
+        // описываеем itemTouch для реализации удаления элемента из RV свайпом. В конструктор SimpleCallback()
+        // нужно передать 2 параметра: 1. направление перемещения, т.к. не испуользуем = 0   2. направление свайпа
+        val itemTouchHelper = ItemTouchHelper(object : ItemTouchHelper
+            .SimpleCallback(0, ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT) {
+            //вызывается при перемещении элемента с одного места на другое, нам это не нужно, возвращаем - false
+            override fun onMove(
+                recyclerView: RecyclerView,
+                viewHolder: RecyclerView.ViewHolder,
+                target: RecyclerView.ViewHolder
+            ): Boolean {
+                return false
+            }
+
+            //вызывается при свайпе
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                val position = viewHolder.adapterPosition // получаем N позиции элемента RV из ViewHoldera
+                val note = notesAdapter.getNotes().get(position) // получаем массив заметок из адаптера и по позиции получаем элемент с нужным индексом
+                database.remove(note.id)
+                showNotes()
+            }
+        })
+        itemTouchHelper.attachToRecyclerView(recyclerViewNotes) // прикрепляем itemTouch к RV
+
 
         buttonAddNote.setOnClickListener {
             startActivity(AddNoteActivity.newIntent(this))
@@ -30,35 +67,12 @@ class MainActivity : AppCompatActivity() {
 
 
     private fun initViews() {
-        linearLayoutNotes = findViewById(R.id.linearLayoutNotes)
+        recyclerViewNotes = findViewById(R.id.recyclerViewNotes)
         buttonAddNote = findViewById(R.id.buttonAddNote)
     }
 
-    /*** fun for updating notes on main activity ***/
+    /* fun for updating notes on main activity */
     private fun showNotes() {
-        linearLayoutNotes.removeAllViews()
-
-        //takes all notes from database, converts each from xml-layout to View objects
-        // and places all views(notes) on ScrollView Linear Layout
-        database.getNotes().forEach { note ->
-            val view = layoutInflater.inflate(R.layout.note_item, linearLayoutNotes, false)
-            view.setOnClickListener{
-                database.remove(note.id)
-                showNotes()
-            }
-
-            //val texViewNote = view.findViewById<TextView>(R.id.textViewNote)
-            //val texViewNote = (view as TextView)
-            (view as TextView).text = note.text
-
-            val colorResId = when (note.priority) {
-                0 -> android.R.color.holo_green_light
-                1 -> android.R.color.holo_orange_light
-                else -> android.R.color.holo_red_light
-            }
-            view.background = ContextCompat.getDrawable(this, colorResId)
-
-            linearLayoutNotes.addView(view)
-        }
+        notesAdapter.setNotes(database.getNotes()) // обновляем базу данных адаптера
     }
 }
