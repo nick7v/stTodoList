@@ -9,9 +9,9 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 class MainActivity : AppCompatActivity() {
     private lateinit var buttonAddNote: FloatingActionButton
-    private lateinit var noteDatabase: NoteDatabase   // переменная для доступа к БД
     private lateinit var recyclerViewNotes: RecyclerView   //строка для последующего доступа к RV
     private lateinit var notesAdapter: NotesAdapter //переменная для доступа к адаптеру
+    private lateinit var viewModel: MainViewModel
 
     /*//!!!!!!! НЕ НУЖЕН после добавления LiveData !!!!!!!!!!!
     private val handler = Handler(Looper.getMainLooper()) // инициализируем объект Handler, который хранит ссылку на главный поток (ее мы передали в параметры)
@@ -20,14 +20,16 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        noteDatabase = NoteDatabase.getInstance(application) // получение экземпляра БД
+        viewModel = MainViewModel(application) // создание объекта ViewModel, в параметры передаем контекст приложения
         initViews()
         notesAdapter = NotesAdapter() //присваивание переменной объект адаптера
 
-        //устанавливаем ClickListener на адаптер (точнее передаем адаптеру слушатель), который в свою очередь у себя в коде
-        // устанаваливает слушатель на элементы списка. Сеттер вызывается 1 раз, а метод внутри него onNoteClick каждый раз при нажатии на элемент списка
-        //!!!!!!!!!!!!  удаление нажатием пока отключил, заменил на свайп !!!!!!!!!!!!!!!
-        /*notesAdapter.setOnNoteClickListener(object : NotesAdapter.OnNoteClickListener {
+        //устанавливаем ClickListener на адаптер (точнее передаем адаптеру слушатель), который в свою очередь
+        // у себя в коде устанаваливает слушатель на элементы списка. Сеттер вызывается 1 раз,
+        // а метод внутри него onNoteClick каждый раз при нажатии на элемент списка
+        //!!!!!!!!!!!!  удаление нажатием пока отключил, заменил на свайп
+        /*notesAdapter.setOnNoteClickListener(object : NotesAdapter.OnNoteClickListener
+						{
             override fun onNoteClick(note: Note) {
                 database.remove(note.id)
                 showNotes()
@@ -36,7 +38,8 @@ class MainActivity : AppCompatActivity() {
 
 
         recyclerViewNotes.adapter = notesAdapter // устанавливаем адаптер для RV
-        //recyclerViewNotes.layoutManager = LinearLayoutManager(this) // устанавливаем LO manager для указания формата отображения RW - здесь в проекте это прописал в xml
+        //recyclerViewNotes.layoutManager = LinearLayoutManager(this) // устанавливаем LO manager для указания
+        // формата отображения RW - здесь в проекте это прописал в xml
 
 
         //получив от БД посредством метода getNotes объект LiveData, используя метод observe() мы подписываемся
@@ -46,20 +49,20 @@ class MainActivity : AppCompatActivity() {
         // наш объект Observer, в нем только один метод onChanged. Итого если произошли изменения в БД и
         // если Activity при этом было активно, у Observer вызовется метод onChanged, в параметры которого
         // прилетят изменения, которые мы в теле метода уже установим в адаптер
-        noteDatabase.notesDao().getNotes().observe(this, object: Observer<List<Note>> {
+        viewModel.getNotes().observe(this, object: Observer<List<Note>> {
             override fun onChanged(value: List<Note>) {
                 notesAdapter.setNotes(value)
             }
-        } )//блок кода выше можно заменить более лаконичным кодом (выше показано, чтобы было понятно объяснение):
-       /* noteDatabase.notesDao().getNotes().observe(this, Observer { notes ->
-            notesAdapter.setNotes(notes)
-        })*/
+        } )//!!!!!!блок кода выше можно заменить более лаконичным кодом (выше показано, чтобы было понятно объяснение):
+        /* noteDatabase.notesDao().getNotes().observe(this, Observer { notes ->
+             notesAdapter.setNotes(notes)
+         })*/
 
 
         // описываеем itemTouch для реализации удаления элемента из RV свайпом. В конструктор SimpleCallback()
         // нужно передать 2 параметра: 1. направление перемещения, т.к. не испуользуем = 0   2. направление свайпа
         val itemTouchHelper = ItemTouchHelper(object : ItemTouchHelper
-            .SimpleCallback(0, ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT) {
+        .SimpleCallback(0, ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT) {
             //вызывается при перемещении элемента с одного места на другое, нам это не нужно, возвращаем - false
             override fun onMove(
                 recyclerView: RecyclerView,
@@ -73,13 +76,16 @@ class MainActivity : AppCompatActivity() {
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                 val position = viewHolder.adapterPosition // получаем N позиции элемента RV из ViewHoldera
                 val note = notesAdapter.getNotes()[position] // получаем массив заметок из адаптера и по позиции получаем элемент с нужным индексом
-                Thread { // в новом фоновом потоке
+                viewModel.remove(note) // удаляем строку из БД через ViewModel
+
+                /*Thread { // в новом фоновом потоке // !!!!!! НЕ НУЖЕН после добавления ViewModel
                     noteDatabase.notesDao().remove(note.id) // сначала удаляем строку из БД c указанным id
-                    /*  //!!!!!!! НЕ НУЖЕН после добавления LiveData !!!!!!!!!!!
-                    handler.post { showNotes() } // после отправляем handler-у главного потока сообщение чтобы он
-                    // в своем потоке (главном) вызвал метод showNotes(), т.е. обновил БД в адаптере RV (т.е. обновляем список заметок)\
-                    */
-                }.start()  // запускаем фоновый поток
+                    */ /*  //!!!!!!! НЕ НУЖЕН после добавления LiveData !!!!!!!!!!!
+                    handler.post { showNotes() } // после отправляем handler-у главного потока сообщение
+                    чтобы он в своем потоке (главном) вызвал метод showNotes(), т.е. обновил БД в адаптере
+                    RV (т.е. обновляем список заметок)\
+                    */ /*
+                }.start()  // запускаем фоновый поток*/
             }
         })
         itemTouchHelper.attachToRecyclerView(recyclerViewNotes) // прикрепляем itemTouch к RV
@@ -96,10 +102,10 @@ class MainActivity : AppCompatActivity() {
     }
 
 
-/*    override fun onResume() { //!!!!!!! НЕ НУЖЕН после добавления LiveData !!!!!!!!!!!
-        super.onResume()
-        showNotes()
-    }*/
+    /*    override fun onResume() { //!!!!!!! НЕ НУЖЕН после добавления LiveData !!!!!!!!!!!
+            super.onResume()
+            showNotes()
+        }*/
 
 
     /*private fun showNotes() {  //!!!!!!! НЕ НУЖЕН после добавления LiveData !!!!!!!!!!!
