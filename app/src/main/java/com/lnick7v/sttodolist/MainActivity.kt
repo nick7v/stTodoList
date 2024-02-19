@@ -28,11 +28,10 @@ class MainActivity : AppCompatActivity() {
         // у себя в коде устанаваливает слушатель на элементы списка. Сеттер вызывается 1 раз,
         // а метод внутри него onNoteClick каждый раз при нажатии на элемент списка
         //!!!!!!!!!!!!  удаление нажатием пока отключил, заменил на свайп
-        /*notesAdapter.setOnNoteClickListener(object : NotesAdapter.OnNoteClickListener
+       /* notesAdapter.setOnNoteClickListener(object : NotesAdapter.OnNoteClickListener
 						{
             override fun onNoteClick(note: Note) {
-                database.remove(note.id)
-                showNotes()
+                viewModel.remove(note)
             }
         })*/
 
