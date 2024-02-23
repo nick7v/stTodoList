@@ -10,6 +10,8 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.RadioButton
 import android.widget.Toast
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 
 class AddNoteActivity : AppCompatActivity() {
     private lateinit var editTextNote: EditText
@@ -17,14 +19,23 @@ class AddNoteActivity : AppCompatActivity() {
     private lateinit var radioButtonMedium: RadioButton
     private lateinit var radioButtonHigh: RadioButton
     private lateinit var buttonSave: Button
-    private lateinit var noteDatabase: NoteDatabase // переменная БД
-    private val handler = Handler(Looper.getMainLooper())
+    private lateinit var viewModel: AddNoteViewModel
+    //*** НЕ НУЖНО после использования ViewModel
+    /*private lateinit var noteDatabase: NoteDatabase // переменная БД
+    private val handler = Handler(Looper.getMainLooper())*/
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_add_note)
-        noteDatabase = NoteDatabase.getInstance(application)  //присваиваем переменной объект БД
+
+        viewModel = ViewModelProvider(this).get(AddNoteViewModel::class.java)
+        viewModel.getCloseScreen().observe(this, Observer { closeScreen ->
+            if(closeScreen) finish()
+        })
+
+        //*** НЕ НУЖНО после использования ViewModel
+        //noteDatabase = NoteDatabase.getInstance(application)  //присваиваем переменной объект БД
         initViews()
 
         buttonSave.setOnClickListener {
@@ -44,10 +55,13 @@ class AddNoteActivity : AppCompatActivity() {
             val priority = getPriority()
             //id не передаем т.к. autogenerate класса Note сгенерирует id самостоятельно (если получит 0)
             val note = Note(text, priority)
-            Thread { // в новом фоновом потоке
+            viewModel.saveNote(note)
+
+            //*** НЕ НУЖНО после использования ViewModel
+            /*Thread { // в новом фоновом потоке
                 noteDatabase.notesDao().add(note) // добавляем заметку в БД
                 handler.post { finish() }  // через handler главного потока закрываем активити
-            }.start()
+            }.start()*/
 
         }
     }
