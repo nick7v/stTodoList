@@ -3,6 +3,7 @@ package com.lnick7v.sttodolist
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -20,7 +21,9 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        viewModel = MainViewModel(application) // создание объекта ViewModel, в параметры передаем контекст приложения
+        // создание объекта ViewModel, в параметры передаем контекст активити, в get - класс ViewModel
+        viewModel = ViewModelProvider(this)[MainViewModel::class.java]
+
         initViews()
         notesAdapter = NotesAdapter() //присваивание переменной объект адаптера
 
@@ -28,10 +31,9 @@ class MainActivity : AppCompatActivity() {
         // у себя в коде устанаваливает слушатель на элементы списка. Сеттер вызывается 1 раз,
         // а метод внутри него onNoteClick каждый раз при нажатии на элемент списка
         //!!!!!!!!!!!!  удаление нажатием пока отключил, заменил на свайп
-       /* notesAdapter.setOnNoteClickListener(object : NotesAdapter.OnNoteClickListener
-						{
+       /*notesAdapter.setOnNoteClickListener(object : NotesAdapter.OnNoteClickListener {
             override fun onNoteClick(note: Note) {
-                viewModel.remove(note)
+                //viewModel.remove(note)
             }
         })*/
 
