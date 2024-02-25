@@ -39,7 +39,15 @@ class MainViewModel(application: Application): AndroidViewModel(application) {
                 override fun accept(notesFromDb: List<Note>) {
                     notes.value = notesFromDb
                 }
+                //блок обработки исключений, если при работе метода getNotesRx(): Single<List<Note>> произошло исключение
+            }, object: Consumer<Throwable> {
+                override fun accept(t: Throwable) {
+                    Log.d("MainViewModel", "Error refreshList()") // описываем действия в случае исключения
+                }
             })
+        // лаконичная запись:
+        // .subscribe({ notesFromDb -> notes.value = notesFromDb }
+        // ) { Log.d("MainViewModel", "Error refreshList()") }
         compositeDisposable.add(disposable)
     }
     //******
@@ -63,10 +71,10 @@ class MainViewModel(application: Application): AndroidViewModel(application) {
         val disposable = removeRx(note) //строка для примера самостоятельного создания объектов классов RxJava
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
-            .subscribe{
+            .subscribe({
                 Log.d("MainViewModel", "Removed: note with id ${note.id}")
                 refreshList() // код для примера работы объекта класса Single RxJava
-            }
+            }) { Log.d("MainViewModel", "Error remove()") } // это лаконичная запись object: Consumer<Throwable> { override fun accept(t: Throwable)
         compositeDisposable.add(disposable)
     }
 

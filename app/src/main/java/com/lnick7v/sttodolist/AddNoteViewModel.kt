@@ -8,9 +8,8 @@ import androidx.lifecycle.MutableLiveData
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.functions.Action
+import io.reactivex.rxjava3.functions.Consumer
 import io.reactivex.rxjava3.schedulers.Schedulers
-import java.util.concurrent.TimeUnit
-
 
 
 class AddNoteViewModel(application: Application): AndroidViewModel(application) {
@@ -42,11 +41,16 @@ class AddNoteViewModel(application: Application): AndroidViewModel(application) 
                     Log.d("AddNoteViewModel", "subscribe") //добавили лог перед закрытием Активити
                     shouldCloseScreen.value = true  // описываем поведение в случае успешного добавления заметки
                 }
-            // лаконичная запись метода .subscribe: .subscribe { shouldCloseScreen.value = true }
-            // если допустим нам после кода выше нужно выполнить какие то действия на фоновом потоке
-            // мы пишем .observeOn(Schedulers.io()) и в строках ниже пишем действия, так можно переключаться
-            // сколько угодно раз
-        })
+            }, object : Consumer<Throwable> { //блок обработки исключений
+                override fun accept(t: Throwable) {
+                    Log.d("AddNoteViewModel", "Error: saveNote")
+                }
+            })
+        // лаконичная запись метода .subscribe:
+        // .subscribe ({ shouldCloseScreen.value = true }) {Log.d("AddNoteViewModel", "Error: saveNote")}
+        // если допустим нам после кода выше нужно выполнить какие то действия на фоновом потоке
+        // мы пишем .observeOn(Schedulers.io()) и в строках ниже пишем действия, так можно переключаться
+        // сколько угодно раз
         compositeDisposable.add(disposable) // добавляем объект disposable в коллекцию
 
 
