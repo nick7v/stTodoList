@@ -12,6 +12,7 @@ import io.reactivex.rxjava3.schedulers.Schedulers
 import java.util.concurrent.TimeUnit
 
 
+
 class AddNoteViewModel(application: Application): AndroidViewModel(application) {
     private val notesDao = NoteDatabase.getInstance(application).notesDao()
     private var shouldCloseScreen = MutableLiveData<Boolean>()
@@ -30,7 +31,7 @@ class AddNoteViewModel(application: Application): AndroidViewModel(application) 
         // subscribe запускает объект Completable в работу (метод add).
         //Добавление заметки (работа с БД) должно происходить в фоновом потоке,
         val disposable = notesDao.add(note)
-            .delay(5, TimeUnit.SECONDS) // сначала добавиться заметка и после 5 сек паузы, выполнится остальной код
+            //.delay(5, TimeUnit.SECONDS) // сначала добавиться заметка и после 5 сек паузы, выполнится остальной код
             .subscribeOn(Schedulers.io()) // метод subscribeOn указывает на каком потоке будет происходить
             // подписка, т.е. добавление заметки (add), для фонового указываем - Schedulers.io() (io - input/output)
             .observeOn(AndroidSchedulers.mainThread()) // метод определяет в каком потоке будет выполняться

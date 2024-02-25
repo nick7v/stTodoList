@@ -103,6 +103,12 @@ class MainActivity : AppCompatActivity() {
     }
 
 
+    override fun onResume() {
+        super.onResume()
+        viewModel.refreshList()
+    }
+
+
     /*    override fun onResume() { //!!!!!!! НЕ НУЖЕН после добавления LiveData !!!!!!!!!!!
             super.onResume()
             showNotes()
